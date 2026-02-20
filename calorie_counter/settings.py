@@ -9,7 +9,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 # Detect Vercel environment
-VERCEL = os.environ.get('VERCEL', False)
+VERCEL = os.environ.get('VERCEL', '') == '1'
 
 # ── Allowed Hosts ─────────────────────────────────────────────────────────────
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
