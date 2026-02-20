@@ -20,3 +20,5 @@ def create_custom_food(request):
     else:
         form = CustomFoodForm()
     return render(request, 'custom_food.html', {'form': form})
+
+# Logic for custom food additions
