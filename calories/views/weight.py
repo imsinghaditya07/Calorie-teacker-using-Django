@@ -50,3 +50,5 @@ def delete_weight_log(request, pk):
         log.delete()
         messages.success(request, 'Weight entry deleted.')
     return redirect('weight_tracker')
+
+# Weight tracking logic and views
