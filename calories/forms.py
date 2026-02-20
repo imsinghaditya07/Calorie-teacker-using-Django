@@ -121,3 +121,5 @@ class CustomFoodForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+
+# Form classes for data validation
