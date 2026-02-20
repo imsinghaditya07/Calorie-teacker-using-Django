@@ -146,3 +146,5 @@ class WeightLog(models.Model):
 
     def __str__(self):
         return f"{self.user.username} – {self.weight_kg}kg on {self.date}"
+
+# Database schema and models
