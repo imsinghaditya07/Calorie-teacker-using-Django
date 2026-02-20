@@ -57,3 +57,5 @@ def dashboard(request):
         'meal_types': MealType.choices,
     }
     return render(request, 'dashboard.html', context)
+
+# Dashboard display logic
