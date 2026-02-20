@@ -81,7 +81,7 @@ WSGI_APPLICATION = 'calorie_counter.wsgi.application'
 
 # ── Database ──────────────────────────────────────────────────────────────────
 # NOTE: SQLite does NOT work on Vercel (read-only filesystem).
-# Set DATABASE_URL in Vercel env vars using a free Neon PostgreSQL database.
+# Set DATABASE_URL in Vercel env vars using a free Supabase PostgreSQL database.
 DATABASE_URL = config('DATABASE_URL', default='')
 
 if DATABASE_URL:
@@ -96,7 +96,7 @@ if DATABASE_URL:
 elif VERCEL:
     raise RuntimeError(
         'DATABASE_URL is required on Vercel. '
-        'Create a free Neon PostgreSQL database at https://neon.tech and add DATABASE_URL to your Vercel env vars.'
+        'Create a free Supabase PostgreSQL database at https://supabase.com/ and add DATABASE_URL to your Vercel env vars.'
     )
 else:
     # Local development — SQLite
