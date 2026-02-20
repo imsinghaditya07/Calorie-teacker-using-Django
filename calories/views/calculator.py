@@ -55,3 +55,5 @@ def bulk_food_log(request):
         messages.error(request, 'No valid items were logged.')
 
     return redirect('dashboard')
+
+# Logic for calorie calculation
