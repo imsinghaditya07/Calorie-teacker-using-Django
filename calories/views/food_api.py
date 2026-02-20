@@ -42,3 +42,5 @@ def food_detail_api(request, pk):
         'fat_g':            item.fat_g,
         'fiber_g':          item.fiber_g,
     })
+
+# API endpoints for food search
