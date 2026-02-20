@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+{% load calorie_tags %}
+{% block title %}Dashboard – CalorieTrack{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ── Page Header ─────────────────────────────────────── -->
+<div class="tf-header">
+    <div class="tf-header-left">
+        <h1 class="tf-page-title">DASHBOARD</h1>
+        <p class="tf-page-sub">
+            <span class="tf-dot"></span>
+            Ready to crush your goals today?
+        </p>
+    </div>
+    <div class="tf-header-right">
+        <a href="{% url 'food_calculator' %}" class="tf-btn-ghost">
+            <i class="fas fa-calculator"></i> Calculator
+        </a>
+        <a href="{% url 'add_food_log' %}" class="tf-btn-primary">
+            <i class="fas fa-plus"></i> LOG MEAL
+        </a>
+    </div>
+</div>
+
+<!-- ── Stat Cards Row ──────────────────────────────────── -->
+<div class="tf-stat-row">
+
+    <!-- Calories In -->
+    <div class="tf-stat-card">
+        <div class="tf-stat-label">CALORIES CONSUMED</div>
+        <div class="tf-stat-value">{{ totals.calories|floatformat:0 }}
+            <span class="tf-stat-unit">kcal</span>
+        </div>
+        <div class="tf-stat-sub">Goal: {{ goal }} kcal</div>
+        <div class="tf-stat-bar">
+            <div class="tf-bar-fill tf-bar-cyan" style="width: {{ pct }}%"></div>
+        </div>
+        <div class="tf-stat-bottom">
+            <span class="tf-tag tf-tag-cyan"><i class="fas fa-fire"></i> {{ remaining|floatformat:0 }} kcal left</span>
+        </div>
+    </div>
+
+    <!-- Protein -->
+    <div class="tf-stat-card">
+        <div class="tf-stat-label">PROTEIN</div>
+        <div class="tf-stat-value">{{ totals.protein|floatformat:1 }}
+            <span class="tf-stat-unit">g</span>
+        </div>
+        <div class="tf-stat-sub">{{ macro_pct.protein }}% of macros</div>
+        <div class="tf-stat-bar">
+            <div class="tf-bar-fill tf-bar-green" style="width: {{ macro_pct.protein }}%"></div>
+        </div>
+        <div class="tf-stat-bottom">
+            <span class="tf-tag tf-tag-green"><i class="fas fa-drumstick-bite"></i> Muscle fuel</span>
+        </div>
+    </div>
+
+    <!-- Carbs -->
+    <div class="tf-stat-card">
+        <div class="tf-stat-label">CARBOHYDRATES</div>
+        <div class="tf-stat-value">{{ totals.carbs|floatformat:1 }}
+            <span class="tf-stat-unit">g</span>
+        </div>
+        <div class="tf-stat-sub">{{ macro_pct.carbs }}% of macros</div>
+        <div class="tf-stat-bar">
+            <div class="tf-bar-fill tf-bar-yellow" style="width: {{ macro_pct.carbs }}%"></div>
+        </div>
+        <div class="tf-stat-bottom">
+            <span class="tf-tag tf-tag-yellow"><i class="fas fa-wheat-awn"></i> Energy source</span>
+        </div>
+    </div>
+
+    <!-- Fat -->
+    <div class="tf-stat-card">
+        <div class="tf-stat-label">FATS</div>
+        <div class="tf-stat-value">{{ totals.fat|floatformat:1 }}
+            <span class="tf-stat-unit">g</span>
+        </div>
+        <div class="tf-stat-sub">{{ macro_pct.fat }}% of macros</div>
+        <div class="tf-stat-bar">
+            <div class="tf-bar-fill tf-bar-purple" style="width: {{ macro_pct.fat }}%"></div>
+        </div>
+        <div class="tf-stat-bottom">
+            <span class="tf-tag tf-tag-purple"><i class="fas fa-droplet"></i> Hormone health</span>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── Middle Row: Energy Balance + Macro Targets ─────── -->
+<div class="tf-mid-row">
+
+    <!-- Energy Balance (donut) -->
+    <div class="tf-card tf-energy-card">
+        <div class="tf-card-header">
+            <span class="tf-card-title">ENERGY BALANCE</span>
+            <i class="fas fa-bolt tf-bolt-icon"></i>
+        </div>
+        <div class="tf-ring-wrap">
+            <svg class="progress-ring" viewBox="0 0 120 120">
+                <defs>
+                    <linearGradient id="ringGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#00d4ff" />
+                        <stop offset="100%" stop-color="#0ea5e9" />
+                    </linearGradient>
+                </defs>
+                <circle class="ring-bg" cx="60" cy="60" r="50" />
+                <circle class="ring-fill tf-ring-fill" cx="60" cy="60" r="50"
+                    style="stroke-dashoffset: calc(314.16 - (314.16 * {{ pct }}) / 100);" data-pct="{{ pct }}" />
+            </svg>
+            <div class="tf-ring-center">
+                <div class="tf-ring-label">REMAINING</div>
+                <div class="tf-ring-value">{{ remaining|floatformat:0 }}</div>
+                <div class="tf-ring-unit">KCAL</div>
+            </div>
+        </div>
+        <div class="tf-energy-footer">
+            <div class="tf-energy-stat">
+                <div class="tf-es-label">CONSUMED</div>
+                <div class="tf-es-value">{{ totals.calories|floatformat:0 }}</div>
+            </div>
+            <div class="tf-energy-divider"></div>
+            <div class="tf-energy-stat">
+                <div class="tf-es-label">GOAL</div>
+                <div class="tf-es-value tf-orange">{{ goal }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Protein Target + Carbs + Fats -->
+    <div class="tf-macro-stack">
+
+        <!-- Protein Target (full width) -->
+        <div class="tf-card tf-protein-card">
+            <div class="tf-card-header">
+                <div>
+                    <div class="tf-card-title">PROTEIN TARGET</div>
+                    <div class="tf-card-sub">Essential for muscle repair &amp; growth.</div>
+                </div>
+                <span class="tf-priority-badge">HIGH PRIORITY</span>
+            </div>
+            <div class="tf-macro-big">
+                {{ totals.protein|floatformat:0 }}
+                <span class="tf-macro-big-unit">g</span>
+                <span class="tf-macro-big-total">logged today</span>
+            </div>
+            <div class="tf-progress-track">
+                <div class="tf-progress-fill tf-bar-green" style="width: {{ macro_pct.protein }}%"></div>
+            </div>
+            <div class="tf-progress-labels">
+                <span>0g</span>
+                <span>50%</span>
+                <span>100%</span>
+            </div>
+        </div>
+
+        <!-- Carbs + Fats row -->
+        <div class="tf-cf-row">
+            <div class="tf-card tf-cf-card">
+                <div class="tf-cf-header">
+                    <span class="tf-cf-icon tf-cf-carb"><i class="fas fa-circle-dot"></i></span>
+                    <span class="tf-cf-name">CARBS</span>
+                    <span class="tf-cf-pct">{{ macro_pct.carbs }}%</span>
+                </div>
+                <div class="tf-cf-value">{{ totals.carbs|floatformat:0 }}g</div>
+                <div class="tf-progress-track">
+                    <div class="tf-progress-fill tf-bar-yellow" style="width: {{ macro_pct.carbs }}%"></div>
+                </div>
+            </div>
+            <div class="tf-card tf-cf-card">
+                <div class="tf-cf-header">
+                    <span class="tf-cf-icon tf-cf-fat"><i class="fas fa-droplet"></i></span>
+                    <span class="tf-cf-name">FATS</span>
+                    <span class="tf-cf-pct">{{ macro_pct.fat }}%</span>
+                </div>
+                <div class="tf-cf-value">{{ totals.fat|floatformat:0 }}g</div>
+                <div class="tf-progress-track">
+                    <div class="tf-progress-fill tf-bar-purple" style="width: {{ macro_pct.fat }}%"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ── Daily Fuel (Meals) ─────────────────────────────── -->
+<div class="tf-card tf-daily-fuel">
+    <div class="tf-df-header">
+        <div class="tf-df-title">
+            <i class="fas fa-utensils-slash tf-fuel-icon"></i>
+            DAILY FUEL
+        </div>
+        <!-- Quick food search -->
+        <div class="tf-df-search-wrap">
+            <i class="fas fa-magnifying-glass tf-search-icon"></i>
+            <input type="text" id="foodSearch" class="tf-df-search" placeholder="Search food log...">
+            <div id="searchResults" class="search-dropdown hidden"></div>
+        </div>
+    </div>
+
+    <!-- Meal columns -->
+    <div class="tf-meal-cols">
+        {% for meal_type, label in meal_types %}
+        {% with meal_logs=meals|get_item:meal_type %}
+        <div class="tf-meal-col">
+            <div class="tf-mc-header">
+                <span class="tf-mc-label">{{ label|upper }}</span>
+                <a href="{% url 'add_food_log' %}" class="tf-mc-add" title="Add to {{ label }}">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+
+            {% if meal_logs %}
+            {% for log in meal_logs %}
+            <div class="tf-meal-item">
+                <div
+                    class="tf-mi-icon {% if meal_type == 'breakfast' %}mi-breakfast{% elif meal_type == 'lunch' %}mi-lunch{% elif meal_type == 'dinner' %}mi-dinner{% else %}mi-snack{% endif %}">
+                    <i
+                        class="fas {% if meal_type == 'breakfast' %}fa-sun{% elif meal_type == 'lunch' %}fa-cloud-sun{% elif meal_type == 'dinner' %}fa-moon{% else %}fa-apple-whole{% endif %}"></i>
+                </div>
+                <div class="tf-mi-info">
+                    <div class="tf-mi-name">{{ log.food_item.name }}</div>
+                    <div class="tf-mi-qty">{{ log.quantity_g|floatformat:0 }}g</div>
+                </div>
+                <div class="tf-mi-right">
+                    <div class="tf-mi-cal">{{ log.calories|floatformat:0 }} kcal</div>
+                    <div class="tf-mi-actions">
+                        <a href="{% url 'edit_food_log' log.pk %}" class="tf-action-btn" title="Edit">
+                            <i class="fas fa-pen"></i>
+                        </a>
+                        <form method="post" action="{% url 'delete_food_log' log.pk %}" style="display:inline"
+                            onsubmit="return confirm('Remove?')">
+                            {% csrf_token %}
+                            <button type="submit" class="tf-action-btn tf-del-btn" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="tf-mi-bar"></div>
+            {% endfor %}
+            <div class="tf-mc-total">{{ meal_totals|get_item:meal_type|floatformat:0 }} kcal</div>
+            {% else %}
+            <div class="tf-mc-empty">
+                <button class="tf-mc-log-btn"
+                    onclick="document.getElementById('foodSearch').focus(); document.getElementById('foodSearch').scrollIntoView({behavior:'smooth'})">
+                    <i class="fas fa-circle-plus"></i>
+                    LOG {{ label|upper }}
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        {% endwith %}
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Quick-log form (hidden, shown after food search) -->
+<div class="tf-card tf-quicklog-card hidden" id="quickLogCard">
+    <div class="tf-card-header">
+        <span class="tf-card-title">QUICK LOG</span>
+        <button type="button" onclick="resetSearch()" class="tf-btn-ghost tf-sm">
+            <i class="fas fa-xmark"></i> Cancel
+        </button>
+    </div>
+    <div class="tf-ql-food-name" id="selectedFoodDisplay"></div>
+    <form method="post" action="{% url 'add_food_log' %}" id="quickLogForm">
+        {% csrf_token %}
+        <input type="hidden" name="food_item" id="selectedFoodId">
+        <div class="tf-ql-fields">
+            <div class="tf-ql-field">
+                <label>Quantity (g)</label>
+                <input type="number" name="quantity_g" id="ql-quantity" value="100" min="1" max="5000" step="0.5"
+                    class="form-control" oninput="updateCalcPreview()">
+            </div>
+            <div class="tf-ql-field">
+                <label>Meal</label>
+                <select name="meal_type" id="ql-meal" class="form-control">
+                    {% for value, label in meal_types %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="tf-ql-field">
+                <label>Date</label>
+                <input type="date" name="date" id="ql-date" value="{{ today|date:'Y-m-d' }}" class="form-control">
+            </div>
+        </div>
+        <div class="tf-ql-preview" id="calcPreview"></div>
+        <div class="tf-ql-actions">
+            <button type="submit" class="tf-btn-primary">
+                <i class="fas fa-plus"></i> Add to Log
+            </button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const SEARCH_URL = "{% url 'food_search_api' %}";
+    let selectedFood = null;
+
+    const searchInput = document.getElementById('foodSearch');
+    const searchResults = document.getElementById('searchResults');
+    const quickLogCard = document.getElementById('quickLogCard');
+    const selectedFoodId = document.getElementById('selectedFoodId');
+    const selectedFoodDisplay = document.getElementById('selectedFoodDisplay');
+    const calcPreview = document.getElementById('calcPreview');
+
+    let searchTimer;
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        const q = searchInput.value.trim();
+        if (q.length < 1) { searchResults.classList.add('hidden'); return; }
+        searchTimer = setTimeout(() => fetchFoods(q), 250);
+    });
+
+    async function fetchFoods(q) {
+        const res = await fetch(`${SEARCH_URL}?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        renderResults(data.results);
+    }
+
+    function renderResults(items) {
+        if (!items.length) {
+            searchResults.innerHTML = '<div class="search-empty">No foods found. <a href="/food/create/">Create custom →</a></div>';
+            searchResults.classList.remove('hidden'); return;
+        }
+        searchResults.innerHTML = items.map(item => `
+    <div class="search-item" onclick="selectFood(${item.id}, '${item.name.replace(/'/g, "\\'")}', ${item.calories}, ${item.protein}, ${item.carbs}, ${item.fat})">
+      <div class="si-main"><span class="si-name">${item.name}</span><span class="si-cat">${item.category}</span></div>
+      <div class="si-macros">
+        <span class="si-cal">${item.calories} kcal</span>
+        <span class="si-macro">P:${item.protein}g</span>
+        <span class="si-macro">C:${item.carbs}g</span>
+        <span class="si-macro">F:${item.fat}g</span>
+      </div>
+    </div>`).join('');
+        searchResults.classList.remove('hidden');
+    }
+
+    function selectFood(id, name, calories, protein, carbs, fat) {
+        selectedFood = { id, name, calories, protein, carbs, fat };
+        selectedFoodId.value = id;
+        selectedFoodDisplay.innerHTML = `<strong>${name}</strong> &nbsp;<span class="si-cal">${calories} kcal / 100g</span>`;
+        searchResults.classList.add('hidden');
+        searchInput.value = name;
+        quickLogCard.classList.remove('hidden');
+        updateCalcPreview();
+        document.getElementById('ql-quantity').focus();
+    }
+
+    function updateCalcPreview() {
+        if (!selectedFood) return;
+        const qty = parseFloat(document.getElementById('ql-quantity').value) || 100;
+        const f = qty / 100;
+        calcPreview.innerHTML = `
+    <span>Cal: <strong>${(selectedFood.calories * f).toFixed(0)} kcal</strong></span>
+    <span>Protein: <strong>${(selectedFood.protein * f).toFixed(1)}g</strong></span>
+    <span>Carbs: <strong>${(selectedFood.carbs * f).toFixed(1)}g</strong></span>
+    <span>Fat: <strong>${(selectedFood.fat * f).toFixed(1)}g</strong></span>`;
+    }
+
+    function resetSearch() {
+        searchInput.value = '';
+        selectedFood = null;
+        quickLogCard.classList.add('hidden');
+        selectedFoodDisplay.innerHTML = '';
+        calcPreview.innerHTML = '';
+        selectedFoodId.value = '';
+        searchResults.classList.add('hidden');
+    }
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.tf-df-search-wrap')) searchResults.classList.add('hidden');
+    });
+</script>
+{% endblock %}

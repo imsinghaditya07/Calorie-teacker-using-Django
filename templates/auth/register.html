@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}Create Account – CalorieTrack{% endblock %}
+
+{% block auth_content %}
+<div class="auth-split">
+
+    <!-- ── Left Panel ────────────────────────────── -->
+    <div class="auth-left">
+        <div class="auth-left-content">
+            <div class="al-brand">
+                <div class="al-logo"><i class="fas fa-fire-flame-curved"></i></div>
+                <span class="al-brand-name">CalorieTrack</span>
+            </div>
+
+            <h2 class="al-headline">Start your<br>health journey.</h2>
+            <p class="al-sub">Join thousands tracking their nutrition for <strong>free</strong>. No subscriptions, no
+                credit card.</p>
+
+            <ul class="al-features">
+                <li><i class="fas fa-check-circle"></i> 293+ Indian &amp; global foods</li>
+                <li><i class="fas fa-check-circle"></i> Real-time Food Calculator</li>
+                <li><i class="fas fa-check-circle"></i> Weight &amp; macro history charts</li>
+                <li><i class="fas fa-check-circle"></i> Set &amp; reach your daily goals</li>
+            </ul>
+
+            <div class="al-pills">
+                <span class="pill pill-cal"><i class="fas fa-fire"></i> 293 Foods</span>
+                <span class="pill pill-prot"><i class="fas fa-chart-line"></i> Charts</span>
+                <span class="pill pill-carb"><i class="fas fa-calculator"></i> Calculator</span>
+                <span class="pill pill-fat"><i class="fas fa-weight-scale"></i> Weight</span>
+            </div>
+        </div>
+
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- ── Right Panel (Form) ────────────────────── -->
+    <div class="auth-right">
+        <div class="auth-form-card auth-form-card--wide">
+
+            <div class="afc-header">
+                <div class="afc-icon"><i class="fas fa-user-plus"></i></div>
+                <h1 class="afc-title">Create account</h1>
+                <p class="afc-sub">Free forever. No credit card needed.</p>
+            </div>
+
+            {% if form.non_field_errors %}
+            <div class="auth-alert">
+                <i class="fas fa-circle-xmark"></i>
+                <span>{{ form.non_field_errors.as_text }}</span>
+            </div>
+            {% endif %}
+
+            <form method="post" class="afc-form">
+                {% csrf_token %}
+
+                <div class="afc-row">
+                    <div class="afc-field">
+                        <label for="id_first_name">First Name</label>
+                        <div class="afc-input-wrap">
+                            <i class="fas fa-user afc-input-icon"></i>
+                            {{ form.first_name }}
+                        </div>
+                        {% if form.first_name.errors %}
+                        <span class="afc-error">{{ form.first_name.errors.as_text }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="afc-field">
+                        <label for="id_last_name">Last Name</label>
+                        <div class="afc-input-wrap">
+                            <i class="fas fa-user afc-input-icon"></i>
+                            {{ form.last_name }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="afc-field">
+                    <label for="id_username">Username</label>
+                    <div class="afc-input-wrap">
+                        <i class="fas fa-at afc-input-icon"></i>
+                        {{ form.username }}
+                    </div>
+                    {% if form.username.errors %}
+                    <span class="afc-error">{{ form.username.errors.as_text }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="afc-field">
+                    <label for="id_email">Email <span class="optional">(optional)</span></label>
+                    <div class="afc-input-wrap">
+                        <i class="fas fa-envelope afc-input-icon"></i>
+                        {{ form.email }}
+                    </div>
+                </div>
+
+                <div class="afc-row">
+                    <div class="afc-field">
+                        <label for="id_password1">Password</label>
+                        <div class="afc-input-wrap">
+                            <i class="fas fa-lock afc-input-icon"></i>
+                            {{ form.password1 }}
+                            <button type="button" class="afc-eye" onclick="togglePwd('id_password1',this)"
+                                aria-label="Show">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        {% if form.password1.errors %}
+                        <span class="afc-error">{{ form.password1.errors.as_text }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="afc-field">
+                        <label for="id_password2">Confirm Password</label>
+                        <div class="afc-input-wrap">
+                            <i class="fas fa-lock afc-input-icon"></i>
+                            {{ form.password2 }}
+                            <button type="button" class="afc-eye" onclick="togglePwd('id_password2',this)"
+                                aria-label="Show">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        {% if form.password2.errors %}
+                        <span class="afc-error">{{ form.password2.errors.as_text }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <button type="submit" class="afc-submit">
+                    <i class="fas fa-rocket"></i>
+                    Start Tracking Free
+                    <span class="submit-arrow">→</span>
+                </button>
+            </form>
+
+            <p class="afc-switch">
+                Already have an account?
+                <a href="{% url 'login' %}">Sign in <i class="fas fa-arrow-right"></i></a>
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function togglePwd(id, btn) {
+        const inp = document.getElementById(id);
+        const ic = btn.querySelector('i');
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+        ic.className = inp.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CalorieTrack – Free calorie and nutrition tracker">
+    <title>{% block title %}CalorieTrack{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Anti-FOUC: apply saved theme before first paint -->
+    <script>
+        (function () {
+            const t = localStorage.getItem('ct-theme');
+            if (t) document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+    {% if user.is_authenticated %}
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon"><i class="fas fa-fire-flame-curved"></i></div>
+            <span class="brand-text">CalorieTrack</span>
+        </div>
+
+        <ul class="sidebar-nav">
+            <li>
+                <a href="{% url 'dashboard' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-gauge-high"></i><span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'add_food_log' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'add_food_log' %}active{% endif %}">
+                    <i class="fas fa-plus-circle"></i><span>Add Food</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'weight_tracker' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'weight_tracker' %}active{% endif %}">
+                    <i class="fas fa-weight-scale"></i><span>Weight</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'history' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'history' %}active{% endif %}">
+                    <i class="fas fa-chart-bar"></i><span>History</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'create_custom_food' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'create_custom_food' %}active{% endif %}">
+                    <i class="fas fa-utensils"></i><span>Custom Food</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'food_calculator' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'food_calculator' %}active{% endif %}">
+                    <i class="fas fa-calculator"></i><span>Calculator</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-bottom">
+            <button class="theme-toggle" id="themeToggle" title="Toggle light/dark">
+                <i class="fas fa-sun theme-toggle-icon-sun"></i>
+                <i class="fas fa-moon theme-toggle-icon-moon"></i>
+            </button>
+            <a href="{% url 'profile' %}"
+                class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                <i class="fas fa-user-circle"></i><span>Profile</span>
+            </a>
+            <a href="{% url 'logout' %}" class="nav-link nav-logout">
+                <i class="fas fa-right-from-bracket"></i><span>Logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Mobile Topbar -->
+    <header class="topbar" id="topbar">
+        <button class="topbar-toggle" id="sidebarToggle" aria-label="Toggle menu">
+            <i class="fas fa-bars"></i>
+        </button>
+        <span class="topbar-title">{% block page_title %}CalorieTrack{% endblock %}</span>
+        <div style="display:flex;align-items:center;gap:10px">
+            <button class="theme-toggle" id="themeToggleMobile" title="Toggle light/dark">
+                <i class="fas fa-sun theme-toggle-icon-sun"></i>
+                <i class="fas fa-moon theme-toggle-icon-moon"></i>
+            </button>
+            <div class="topbar-avatar" style="background: {{ request.user.profile.avatar_color|default:'#38bdf8' }}">
+                {{ request.user.username|slice:":1"|upper }}
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="main-content" id="mainContent">
+        {% if messages %}
+        <div class="messages-container">
+            {% for msg in messages %}
+            <div class="alert alert-{{ msg.tags }}" id="alert-{{ forloop.counter }}">
+                <i
+                    class="fas {% if msg.tags == 'success' %}fa-circle-check{% elif msg.tags == 'error' %}fa-circle-xmark{% else %}fa-circle-info{% endif %}"></i>
+                {{ msg }}
+                <button class="alert-close" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    {% else %}
+    <!-- Public page wrapper -->
+    <div class="auth-wrapper">
+        {% block auth_content %}{% endblock %}
+    </div>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    {% load static %}
+    <script src="{% static 'js/theme.js' %}"></script>
+    <script src="{% static 'js/sidebar.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

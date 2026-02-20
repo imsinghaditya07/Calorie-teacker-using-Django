@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}Weight Tracker – CalorieTrack{% endblock %}
+{% block page_title %}Weight Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-heading">Weight Tracker</h1>
+</div>
+
+<div class="two-col-layout">
+    <!-- Log Form -->
+    <div class="card">
+        <h2 class="card-title"><i class="fas fa-weight-scale"></i> Log Weight</h2>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<span class="field-error">{{ field.errors.as_text }}</span>{% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary btn-full"><i class="fas fa-save"></i> Save Weight</button>
+        </form>
+    </div>
+
+    <!-- Stats -->
+    <div class="card">
+        <h2 class="card-title"><i class="fas fa-chart-line"></i> Recent Entries</h2>
+        {% if logs %}
+        <ul class="weight-list">
+            {% for log in logs %}
+            <li class="weight-entry">
+                <div class="we-info">
+                    <span class="we-date">{{ log.date|date:"M j, Y" }}</span>
+                    {% if log.notes %}<span class="we-note">{{ log.notes }}</span>{% endif %}
+                </div>
+                <div class="we-right">
+                    <span class="we-value">{{ log.weight_kg }} kg</span>
+                    <form method="post" action="{% url 'delete_weight_log' log.pk %}"
+                        onsubmit="return confirm('Delete this entry?')">
+                        {% csrf_token %}
+                        <button type="submit" class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-msg">No weight entries yet. Log your first weight above!</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Chart -->
+{% if chart_data %}
+<div class="card">
+    <h2 class="card-title"><i class="fas fa-chart-area"></i> Weight Over Time</h2>
+    <canvas id="weightChart" height="80"></canvas>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if chart_data %}
+<script>
+    const ctx = document.getElementById('weightChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels| safe }},
+        datasets: [{
+            label: 'Weight (kg)',
+            data: {{ chart_data| safe }},
+        borderColor: '#38bdf8',
+        backgroundColor: 'rgba(56,189,248,0.12)',
+        pointBackgroundColor: '#38bdf8',
+        pointRadius: 4,
+        tension: 0.4,
+        fill: true,
+    }]
+  },
+        options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', maxTicksLimit: 10 } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

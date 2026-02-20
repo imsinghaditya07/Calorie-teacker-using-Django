@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}History – CalorieTrack{% endblock %}
+{% block page_title %}Calorie History{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-heading">30-Day History</h1>
+    <div class="stat-badge">
+        <span class="badge-label">Daily Average</span>
+        <span class="badge-value">{{ avg_calories|floatformat:0 }} kcal</span>
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="card-title"><i class="fas fa-chart-bar"></i> Daily Calories vs Goal</h2>
+    <canvas id="calHistory" height="80"></canvas>
+</div>
+
+<div class="card">
+    <h2 class="card-title"><i class="fas fa-chart-line"></i> Macro Breakdown</h2>
+    <canvas id="macroHistory" height="80"></canvas>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const labels = {{ labels| safe }};
+    const calData = {{ cal_data| safe }};
+    const proteinData = {{ protein_data| safe }};
+    const carbData = {{ carb_data| safe }};
+    const fatData = {{ fat_data| safe }};
+    const goal = {{ goal }};
+
+    // Calorie chart
+    new Chart(document.getElementById('calHistory').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Calories',
+                    data: calData,
+                    backgroundColor: calData.map(v => v > goal ? 'rgba(248,113,113,0.7)' : 'rgba(56,189,248,0.7)'),
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Goal',
+                    data: Array(labels.length).fill(goal),
+                    type: 'line',
+                    borderColor: '#34d399',
+                    borderDash: [6, 4],
+                    pointRadius: 0,
+                    fill: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#94a3b8' } } },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8', maxTicksLimit: 10 } },
+                y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8' }, beginAtZero: true }
+            }
+        }
+    });
+
+    // Macro chart
+    new Chart(document.getElementById('macroHistory').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                { label: 'Protein (g)', data: proteinData, borderColor: '#818cf8', backgroundColor: 'rgba(129,140,248,0.1)', tension: 0.4, fill: true },
+                { label: 'Carbs (g)', data: carbData, borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)', tension: 0.4, fill: true },
+                { label: 'Fat (g)', data: fatData, borderColor: '#f87171', backgroundColor: 'rgba(248,113,113,0.1)', tension: 0.4, fill: true },
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#94a3b8' } } },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8', maxTicksLimit: 10 } },
+                y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8' }, beginAtZero: true }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Custom Food – CalorieTrack{% endblock %}
+{% block page_title %}Create Custom Food{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-heading">Create Custom Food</h1>
+    <a href="{% url 'dashboard' %}" class="btn btn-ghost"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="card form-card">
+    <p class="card-description">Add your own food with custom nutrition values. Values are per 100g.</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-field">
+            <label>Food Name</label>
+            {{ form.name }}
+        </div>
+        <div class="form-field">
+            <label>Category</label>
+            {{ form.category }}
+        </div>
+        <div class="macro-inputs">
+            <div class="form-field">
+                <label><i class="fas fa-fire" style="color:#f87171"></i> Calories (kcal)</label>
+                {{ form.calories_per_100g }}
+            </div>
+            <div class="form-field">
+                <label><i class="fas fa-drumstick-bite" style="color:#818cf8"></i> Protein (g)</label>
+                {{ form.protein_g }}
+            </div>
+            <div class="form-field">
+                <label><i class="fas fa-wheat-awn" style="color:#fbbf24"></i> Carbs (g)</label>
+                {{ form.carbs_g }}
+            </div>
+            <div class="form-field">
+                <label><i class="fas fa-droplet" style="color:#34d399"></i> Fat (g)</label>
+                {{ form.fat_g }}
+            </div>
+            <div class="form-field">
+                <label>Fiber (g)</label>
+                {{ form.fiber_g }}
+            </div>
+        </div>
+        {% for field in form %}{% if field.errors %}
+        <div class="field-error">{{ field.label }}: {{ field.errors.as_text }}</div>
+        {% endif %}{% endfor %}
+        <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Create Food</button>
+    </form>
+</div>
+{% endblock %}

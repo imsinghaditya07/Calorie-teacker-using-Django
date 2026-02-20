@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} – CalorieTrack{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-heading">{{ title }}</h1>
+    <a href="{% url 'dashboard' %}" class="btn btn-ghost"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="card form-card">
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Food search for add mode -->
+        {% if not log %}
+        <div class="form-field">
+            <label>Food Item</label>
+            <input type="text" id="foodSearch2" class="form-control" placeholder="Search for a food...">
+            <div id="searchResults2" class="search-dropdown hidden"></div>
+            {{ form.food_item }}
+            <div id="selectedDisplay2" class="selected-food-display"></div>
+        </div>
+        {% else %}
+        <div class="form-field">
+            <label>Food Item</label>
+            {{ form.food_item }}
+        </div>
+        {% endif %}
+
+        <div class="form-row">
+            <div class="form-field">
+                <label>Quantity (g)</label>
+                {{ form.quantity_g }}
+            </div>
+            <div class="form-field">
+                <label>Meal</label>
+                {{ form.meal_type }}
+            </div>
+        </div>
+        <div class="form-field">
+            <label>Date</label>
+            {{ form.date }}
+        </div>
+        <div class="form-field">
+            <label>Notes (optional)</label>
+            {{ form.notes }}
+        </div>
+
+        {% for field in form %}{% if field.errors %}
+        <div class="field-error">{{ field.label }}: {{ field.errors.as_text }}</div>
+        {% endif %}{% endfor %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> {{ title }}</button>
+            <a href="{% url 'dashboard' %}" class="btn btn-ghost">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not log %}
+<script>
+    const SEARCH_URL2 = "{% url 'food_search_api' %}";
+    let searchTimer2;
+    document.getElementById('foodSearch2').addEventListener('input', function () {
+        clearTimeout(searchTimer2);
+        const q = this.value.trim();
+        if (q.length < 1) return;
+        searchTimer2 = setTimeout(() => {
+            fetch(`${SEARCH_URL2}?q=${encodeURIComponent(q)}`)
+                .then(r => r.json())
+                .then(data => {
+                    const sr = document.getElementById('searchResults2');
+                    sr.innerHTML = data.results.map(i =>
+                        `<div class="search-item" onclick="selectFood2(${i.id},'${i.name.replace(/'/g, "\\'")}')">${i.name} <span class="si-cal">${i.calories} kcal</span></div>`
+                    ).join('');
+                    sr.classList.remove('hidden');
+                });
+        }, 250);
+    });
+
+    function selectFood2(id, name) {
+        document.querySelector('[name=food_item]').value = id;
+        document.getElementById('selectedDisplay2').textContent = '✔ ' + name;
+        document.getElementById('foodSearch2').value = name;
+        document.getElementById('searchResults2').classList.add('hidden');
+    }
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% block title %}Food Calculator – CalorieTrack{% endblock %}
+{% block page_title %}Food Calculator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-heading">🧮 Food Calculator</h1>
+        <p class="page-sub">Search foods, set quantities, and instantly see calorie & macro totals</p>
+    </div>
+    <button class="btn btn-ghost" onclick="clearAll()"><i class="fas fa-trash"></i> Clear All</button>
+</div>
+
+<!-- Search -->
+<div class="card search-card">
+    <h2 class="card-title"><i class="fas fa-magnifying-glass"></i> Search & Add Food</h2>
+    <div class="food-search-wrapper">
+        <input type="text" id="calcSearch" class="form-control search-input"
+            placeholder="Type a food name... (e.g. Roti, Biryani, Chicken Tikka, Dal Makhani)">
+        <div id="calcResults" class="search-dropdown hidden"></div>
+    </div>
+</div>
+
+<!-- Quick Add Bar (appears after food selected) -->
+<div id="quickAddBar" class="card quick-add-bar hidden">
+    <div class="qab-food-name" id="qabFoodName"></div>
+    <div class="qab-controls">
+        <div class="field-group">
+            <label for="qabQty">Quantity (g)</label>
+            <input type="number" id="qabQty" value="100" min="1" max="5000" step="0.5" class="form-control"
+                oninput="updateQabPreview()">
+        </div>
+        <div id="qabPreview" class="qab-preview"></div>
+        <button class="btn btn-primary" onclick="addToCalculator()">
+            <i class="fas fa-plus"></i> Add to Plate
+        </button>
+    </div>
+</div>
+
+<!-- Plate (added items) -->
+<div id="plateSection" class="hidden">
+    <div class="card">
+        <h2 class="card-title"><i class="fas fa-utensils"></i> Your Plate</h2>
+        <div class="plate-table-wrapper">
+            <table class="plate-table">
+                <thead>
+                    <tr>
+                        <th>Food</th>
+                        <th>Qty (g)</th>
+                        <th>Calories</th>
+                        <th>Protein</th>
+                        <th>Carbs</th>
+                        <th>Fat</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="plateBody"></tbody>
+                <tfoot>
+                    <tr class="plate-totals" id="plateTotals">
+                        <td colspan="2"><strong>Total</strong></td>
+                        <td id="totalCal">—</td>
+                        <td id="totalProt">—</td>
+                        <td id="totalCarbs">—</td>
+                        <td id="totalFat">—</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Visual Total Bar -->
+        <div class="calc-summary" id="calcSummary">
+            <div class="cs-item cs-cal">
+                <div class="cs-icon"><i class="fas fa-fire"></i></div>
+                <div class="cs-info">
+                    <span class="cs-label">Calories</span>
+                    <span class="cs-value" id="sumCal">0 kcal</span>
+                </div>
+            </div>
+            <div class="cs-item cs-protein">
+                <div class="cs-icon"><i class="fas fa-drumstick-bite"></i></div>
+                <div class="cs-info">
+                    <span class="cs-label">Protein</span>
+                    <span class="cs-value" id="sumProt">0g</span>
+                </div>
+            </div>
+            <div class="cs-item cs-carbs">
+                <div class="cs-icon"><i class="fas fa-wheat-awn"></i></div>
+                <div class="cs-info">
+                    <span class="cs-label">Carbs</span>
+                    <span class="cs-value" id="sumCarbs">0g</span>
+                </div>
+            </div>
+            <div class="cs-item cs-fat">
+                <div class="cs-icon"><i class="fas fa-droplet"></i></div>
+                <div class="cs-info">
+                    <span class="cs-label">Fat</span>
+                    <span class="cs-value" id="sumFat">0g</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log All button -->
+        <div class="calc-log-actions" id="calcLogActions">
+            <button class="btn btn-primary" onclick="logAllFoods()">
+                <i class="fas fa-calendar-plus"></i> Log All to Today's Diary
+            </button>
+            <a href="{% url 'dashboard' %}" class="btn btn-ghost">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<!-- Log modal -->
+<div id="logModal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3><i class="fas fa-calendar-plus"></i> Log All Foods</h3>
+        <p style="color:var(--text-dim);font-size:14px;margin-bottom:16px;">All plate items will be logged to today's
+            diary.</p>
+        <form id="bulkLogForm" method="post" action="{% url 'bulk_food_log' %}">
+            {% csrf_token %}
+            <input type="hidden" id="bulkData" name="bulk_data">
+            <div class="form-field">
+                <label>Meal Type</label>
+                <select name="meal_type" class="form-control">
+                    {% for value, label in meal_types %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Confirm Log</button>
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const SEARCH_URL = "{% url 'food_search_api' %}";
+    let selectedFood = null;
+    let plate = [];  // [{id, name, qty, cal, prot, carbs, fat}]
+
+    // ── Search ────────────────────────────────────────────────────────────────────
+    const searchInput = document.getElementById('calcSearch');
+    const resultsBox = document.getElementById('calcResults');
+    let timer;
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(timer);
+        const q = searchInput.value.trim();
+        if (q.length < 1) { resultsBox.classList.add('hidden'); return; }
+        timer = setTimeout(() => search(q), 200);
+    });
+
+    async function search(q) {
+        const res = await fetch(`${SEARCH_URL}?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        renderResults(data.results);
+    }
+
+    function renderResults(items) {
+        if (!items.length) {
+            resultsBox.innerHTML = '<div class="search-empty">No foods found. <a href="/food/create/">Create custom food →</a></div>';
+            resultsBox.classList.remove('hidden');
+            return;
+        }
+        resultsBox.innerHTML = items.map(i => `
+    <div class="search-item" onclick="selectFood(${i.id},'${i.name.replace(/'/g, "\\'")}',${i.calories},${i.protein},${i.carbs},${i.fat})">
+      <div class="si-main">
+        <span class="si-name">${i.name}</span>
+        <span class="si-cat">${i.category}</span>
+      </div>
+      <div class="si-macros">
+        <span class="si-cal">${i.calories} kcal</span>
+        <span class="si-macro">P:${i.protein}g</span>
+        <span class="si-macro">C:${i.carbs}g</span>
+        <span class="si-macro">F:${i.fat}g</span>
+      </div>
+    </div>`).join('');
+        resultsBox.classList.remove('hidden');
+    }
+
+    function selectFood(id, name, cal, prot, carbs, fat) {
+        selectedFood = { id, name, cal, prot, carbs, fat };
+        document.getElementById('qabFoodName').innerHTML = `<strong>${name}</strong> <span class="si-cal">${cal} kcal / 100g</span>`;
+        document.getElementById('qabQty').value = 100;
+        document.getElementById('quickAddBar').classList.remove('hidden');
+        resultsBox.classList.add('hidden');
+        searchInput.value = name;
+        updateQabPreview();
+        document.getElementById('qabQty').focus();
+    }
+
+    function updateQabPreview() {
+        if (!selectedFood) return;
+        const qty = parseFloat(document.getElementById('qabQty').value) || 100;
+        const f = qty / 100;
+        document.getElementById('qabPreview').innerHTML = `
+    <span>🔥 <strong>${(selectedFood.cal * f).toFixed(0)}</strong> kcal</span>
+    <span>P: <strong>${(selectedFood.prot * f).toFixed(1)}g</strong></span>
+    <span>C: <strong>${(selectedFood.carbs * f).toFixed(1)}g</strong></span>
+    <span>F: <strong>${(selectedFood.fat * f).toFixed(1)}g</strong></span>`;
+    }
+
+    // ── Plate management ──────────────────────────────────────────────────────────
+    function addToCalculator() {
+        if (!selectedFood) return;
+        const qty = parseFloat(document.getElementById('qabQty').value) || 100;
+        const f = qty / 100;
+        plate.push({
+            id: selectedFood.id,
+            name: selectedFood.name,
+            qty,
+            cal: parseFloat((selectedFood.cal * f).toFixed(1)),
+            prot: parseFloat((selectedFood.prot * f).toFixed(1)),
+            carbs: parseFloat((selectedFood.carbs * f).toFixed(1)),
+            fat: parseFloat((selectedFood.fat * f).toFixed(1)),
+        });
+        renderPlate();
+        // reset
+        selectedFood = null;
+        searchInput.value = '';
+        document.getElementById('quickAddBar').classList.add('hidden');
+        document.getElementById('qabPreview').innerHTML = '';
+    }
+
+    function removeFromPlate(idx) {
+        plate.splice(idx, 1);
+        renderPlate();
+    }
+
+    function renderPlate() {
+        const body = document.getElementById('plateBody');
+        const section = document.getElementById('plateSection');
+
+        if (!plate.length) { section.classList.add('hidden'); return; }
+        section.classList.remove('hidden');
+
+        body.innerHTML = plate.map((item, i) => `
+    <tr>
+      <td class="pt-name">${item.name}</td>
+      <td>${item.qty}g</td>
+      <td class="pt-cal">${item.cal}</td>
+      <td>${item.prot}g</td>
+      <td>${item.carbs}g</td>
+      <td>${item.fat}g</td>
+      <td><button class="action-btn delete-btn" onclick="removeFromPlate(${i})"><i class="fas fa-trash"></i></button></td>
+    </tr>`).join('');
+
+        const totals = plate.reduce((acc, item) => {
+            acc.cal += item.cal; acc.prot += item.prot;
+            acc.carbs += item.carbs; acc.fat += item.fat;
+            return acc;
+        }, { cal: 0, prot: 0, carbs: 0, fat: 0 });
+
+        document.getElementById('totalCal').innerHTML = `<strong>${totals.cal.toFixed(0)} kcal</strong>`;
+        document.getElementById('totalProt').innerHTML = `<strong>${totals.prot.toFixed(1)}g</strong>`;
+        document.getElementById('totalCarbs').innerHTML = `<strong>${totals.carbs.toFixed(1)}g</strong>`;
+        document.getElementById('totalFat').innerHTML = `<strong>${totals.fat.toFixed(1)}g</strong>`;
+
+        document.getElementById('sumCal').textContent = totals.cal.toFixed(0) + ' kcal';
+        document.getElementById('sumProt').textContent = totals.prot.toFixed(1) + 'g';
+        document.getElementById('sumCarbs').textContent = totals.carbs.toFixed(1) + 'g';
+        document.getElementById('sumFat').textContent = totals.fat.toFixed(1) + 'g';
+    }
+
+    function clearAll() {
+        plate = [];
+        selectedFood = null;
+        searchInput.value = '';
+        document.getElementById('quickAddBar').classList.add('hidden');
+        document.getElementById('plateSection').classList.add('hidden');
+        resultsBox.classList.add('hidden');
+    }
+
+    function logAllFoods() {
+        if (!plate.length) return;
+        document.getElementById('bulkData').value = JSON.stringify(plate);
+        document.getElementById('logModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('logModal').classList.add('hidden');
+    }
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.food-search-wrapper')) resultsBox.classList.add('hidden');
+        if (e.target === document.getElementById('logModal')) closeModal();
+    });
+</script>
+{% endblock %}

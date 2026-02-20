@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}Sign In – CalorieTrack{% endblock %}
+
+{% block auth_content %}
+<div class="auth-split">
+
+    <!-- ── Left Panel ────────────────────────────── -->
+    <div class="auth-left">
+        <div class="auth-left-content">
+            <div class="al-brand">
+                <div class="al-logo"><i class="fas fa-fire-flame-curved"></i></div>
+                <span class="al-brand-name">CalorieTrack</span>
+            </div>
+
+            <h2 class="al-headline">Track smarter.<br>Live better.</h2>
+            <p class="al-sub">Your completely <strong>free</strong> nutrition companion. Log meals, track macros, and
+                reach your goals.</p>
+
+            <ul class="al-features">
+                <li><i class="fas fa-check-circle"></i> 293+ Indian &amp; global foods</li>
+                <li><i class="fas fa-check-circle"></i> Live calorie &amp; macro tracking</li>
+                <li><i class="fas fa-check-circle"></i> Weight &amp; progress history</li>
+                <li><i class="fas fa-check-circle"></i> 100% free — no credit card</li>
+            </ul>
+
+            <!-- Floating macro pills -->
+            <div class="al-pills">
+                <span class="pill pill-cal"><i class="fas fa-fire"></i> Calories</span>
+                <span class="pill pill-prot"><i class="fas fa-drumstick-bite"></i> Protein</span>
+                <span class="pill pill-carb"><i class="fas fa-wheat-awn"></i> Carbs</span>
+                <span class="pill pill-fat"><i class="fas fa-droplet"></i> Fat</span>
+            </div>
+        </div>
+
+        <!-- Background blobs -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- ── Right Panel (Form) ────────────────────── -->
+    <div class="auth-right">
+        <div class="auth-form-card">
+
+            <div class="afc-header">
+                <div class="afc-icon"><i class="fas fa-right-to-bracket"></i></div>
+                <h1 class="afc-title">Welcome back</h1>
+                <p class="afc-sub">Sign in to continue your journey</p>
+            </div>
+
+            {% if messages %}
+            {% for msg in messages %}
+            <div class="auth-alert">
+                <i class="fas fa-circle-xmark"></i>
+                <span>{{ msg }}</span>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="post" autocomplete="off" class="afc-form">
+                {% csrf_token %}
+
+                <div class="afc-field">
+                    <label for="id_username">Username</label>
+                    <div class="afc-input-wrap">
+                        <i class="fas fa-user afc-input-icon"></i>
+                        <input type="text" name="username" id="id_username" class="afc-input"
+                            placeholder="Enter your username" required autofocus autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="afc-field">
+                    <label for="id_password">Password</label>
+                    <div class="afc-input-wrap">
+                        <i class="fas fa-lock afc-input-icon"></i>
+                        <input type="password" name="password" id="id_password" class="afc-input"
+                            placeholder="Enter your password" required autocomplete="current-password">
+                        <button type="button" class="afc-eye" onclick="togglePwd('id_password',this)"
+                            aria-label="Show password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="afc-submit">
+                    <i class="fas fa-right-to-bracket"></i>
+                    Sign In
+                    <span class="submit-arrow">→</span>
+                </button>
+            </form>
+
+            <p class="afc-switch">
+                Don't have an account?
+                <a href="{% url 'register' %}">Create one free <i class="fas fa-arrow-right"></i></a>
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function togglePwd(id, btn) {
+        const inp = document.getElementById(id);
+        const ic = btn.querySelector('i');
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            ic.className = 'fas fa-eye-slash';
+        } else {
+            inp.type = 'password';
+            ic.className = 'fas fa-eye';
+        }
+    }
+</script>
+{% endblock %}

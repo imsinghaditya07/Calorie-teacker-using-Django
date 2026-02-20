@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Profile – CalorieTrack{% endblock %}
+{% block page_title %}Profile{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-heading">My Profile</h1>
+</div>
+
+<div class="card profile-card">
+    <div class="profile-avatar-section">
+        <div class="profile-avatar" style="background: {{ profile.avatar_color }}">
+            {{ request.user.username|slice:":1"|upper }}
+        </div>
+        <div>
+            <h2 class="profile-name">{{ request.user.get_full_name|default:request.user.username }}</h2>
+            <p class="profile-since">Member since {{ request.user.date_joined|date:"F Y" }}</p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-section">
+            <h3 class="form-section-title">Personal Info</h3>
+            <div class="form-row">
+                <div class="form-field">
+                    <label>First Name</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="form-field">
+                    <label>Last Name</label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+            <div class="form-field">
+                <label>Email</label>
+                {{ form.email }}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 class="form-section-title">Body Metrics</h3>
+            <div class="form-row">
+                <div class="form-field">
+                    <label>Height (cm)</label>
+                    {{ form.height_cm }}
+                </div>
+                <div class="form-field">
+                    <label>Weight (kg)</label>
+                    {{ form.weight_kg }}
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label>Date of Birth</label>
+                    {{ form.date_of_birth }}
+                </div>
+                <div class="form-field">
+                    <label>Gender</label>
+                    {{ form.gender }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 class="form-section-title">Goals & Preferences</h3>
+            <div class="form-row">
+                <div class="form-field">
+                    <label><i class="fas fa-fire"></i> Daily Calorie Goal</label>
+                    {{ form.daily_calorie_goal }}
+                </div>
+                <div class="form-field">
+                    <label><i class="fas fa-palette"></i> Avatar Color</label>
+                    {{ form.avatar_color }}
+                </div>
+            </div>
+            {% if profile.height_cm and profile.weight_kg %}
+            <div class="info-card">
+                <i class="fas fa-calculator"></i>
+                Estimated TDEE (Moderate Activity): <strong>{{ profile.get_tdee }} kcal/day</strong>
+            </div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Profile</button>
+    </form>
+</div>
+{% endblock %}
