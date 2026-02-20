@@ -37,3 +37,5 @@ urlpatterns = [
     # Profile
     path('profile/', views.profile, name='profile'),
 ]
+
+# URL configurations for the application
