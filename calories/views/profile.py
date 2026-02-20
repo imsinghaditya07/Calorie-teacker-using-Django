@@ -29,3 +29,5 @@ def profile(request):
         })
 
     return render(request, 'profile.html', {'form': form, 'profile': user_profile})
+
+# User profile management logic
