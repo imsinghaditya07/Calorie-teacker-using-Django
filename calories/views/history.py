@@ -48,3 +48,5 @@ def history(request):
         'avg_calories': avg_calories,
         'goal':         profile.daily_calorie_goal,
     })
+
+# Historical data viewing logic
