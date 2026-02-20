@@ -30,3 +30,5 @@ class WeightLogAdmin(admin.ModelAdmin):
     list_filter = ['date']
     search_fields = ['user__username']
     date_hierarchy = 'date'
+
+# Setup admin configurations for the app
