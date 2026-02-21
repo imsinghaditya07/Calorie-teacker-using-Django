@@ -13,6 +13,7 @@ from ..models import FoodLog, UserProfile
 def history(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     end   = date.today()
+    # Fetch data for the last 30 days including today
     start = end - timedelta(days=29)
 
     logs = FoodLog.objects.filter(
