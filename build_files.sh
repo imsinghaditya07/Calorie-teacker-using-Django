@@ -1,5 +1,5 @@
 #!/bin/bash
-# Vercel build script - runs pip install + collectstatic + migrate
+# Vercel deployment script - runs pip install + collectstatic + migrate
 
 set -e  # Exit immediately if any command fails
 
