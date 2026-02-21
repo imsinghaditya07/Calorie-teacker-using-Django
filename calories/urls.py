@@ -1,3 +1,7 @@
+"""
+URL configuration for the calories app.
+Maps URLs to corresponding view functions.
+"""
 from django.urls import path
 from . import views
 
