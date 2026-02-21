@@ -1,5 +1,7 @@
 # CalorieTracker Django MVP
 
+> **Note:** This project is under progress and will be completed soon. Managed by Aditya Singh.
+
 A production-ready, full-stack Calorie and Macronutrient Tracking application built on Django. This project implements a robust monolithic architecture, leveraging serverless deployment paradigms for zero-cost operational overhead via Vercel and Neon (PostgreSQL).
 
 The user interface implements a premium, responsive dark/light mode design system (inspired by modern fitness applications) without relying on heavy frontend frameworks, prioritizing minimal payload size and rapid server-side rendering (SSR) via Django Templates.
