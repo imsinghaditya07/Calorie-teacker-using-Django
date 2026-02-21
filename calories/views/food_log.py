@@ -48,4 +48,4 @@ def delete_food_log(request, pk):
         messages.success(request, f'Removed {name} from your log.')
     return redirect('dashboard')
 
-# Views for logging food intake
+# Views for logging, editing, and deleting daily food intake
